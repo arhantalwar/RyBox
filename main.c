@@ -84,7 +84,7 @@ int main() {
         .Type = KICK,
         .Rec.x = 300,
         .Rec.y = 0,
-        .Rec.width = 20,
+        .Rec.width = 40,
         .Rec.height = (float) HEIGHT/3,
         .color = ColorAlpha(PURPLE, 0.3)
     };
@@ -93,7 +93,7 @@ int main() {
         .Type = SNARE,
         .Rec.x = 300,
         .Rec.y = (float) HEIGHT/3,
-        .Rec.width = 20,
+        .Rec.width = 40,
         .Rec.height = (float) HEIGHT/3,
         .color = (Color){229, 116, 188, 255}
     };
@@ -102,7 +102,7 @@ int main() {
         .Type = LONG_HOLD,
         .Rec.x = 300,
         .Rec.y = (float) 2 * HEIGHT/3,
-        .Rec.width = 20,
+        .Rec.width = 40,
         .Rec.height = (float) HEIGHT/3,
         .color = ColorAlpha(ORANGE, 0.3),
     };
