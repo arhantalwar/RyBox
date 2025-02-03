@@ -1,10 +1,12 @@
+#include <math.h>
 #include <stdlib.h>
 #include <raylib.h>
 
 #define WIDTH 1024 * 1.5
 #define HEIGHT 900
-#define BEAT_OFFSET 2
+#define BEAT_OFFSET 2.3
 #define SPEED 500
+#define PERFECT_SPEED 40
 #define KICK_NUM 8
 #define SNARE_NUM 9
 #define LONG_NUM 23
@@ -27,6 +29,7 @@ typedef struct BeatBox {
     Rectangle Rec;
     Color color;
     bool active;
+    bool isPerfect;
 } BeatBox;
 
 BeatBox* GenerateBeatTiming(BeatType type, int num, float timings[num]) {
@@ -40,6 +43,7 @@ BeatBox* GenerateBeatTiming(BeatType type, int num, float timings[num]) {
         beat_timings[i].Rec.height = (float) HEIGHT/3;
         beat_timings[i].BeatAt = (float) timings[i] - BEAT_OFFSET;
         beat_timings[i].active = false;
+        beat_timings[i].isPerfect = false;
 
         switch (type) {
 
@@ -127,7 +131,7 @@ int main() {
     while(!WindowShouldClose()) {
 
         float deltaTime = GetFrameTime();
-        float track_marker = GetTime();
+        float track_marker = GetMusicTimePlayed(track);
 
         ClearBackground(RAYWHITE);
         UpdateMusicStream(track);
@@ -138,28 +142,27 @@ int main() {
 
         for(int i = 0; i < KICK_NUM; i++) {
 
-            if (!KickRhythm[i].active && track_marker >= KickRhythm[i].BeatAt) {
+            if (!KickRhythm[i].active && fabs(track_marker - KickRhythm[i].BeatAt) < 0.05f) {
                 KickRhythm[i].active = true;
-            }
-
-            if (KickRhythm[i].active && KickRhythm[i].Rec.x > -20) {
-
-                KickRhythm[i].Rec.x -= SPEED * deltaTime;
-
-                DrawRectangle(
-                        KickRhythm[i].Rec.x,
-                        KickRhythm[i].Rec.y,
-                        KickRhythm[i].Rec.width,
-                        KickRhythm[i].Rec.height,
-                        KickRhythm[i].color
-                        );
-
             }
 
             isPerfectKick = CheckCollisionRecs(KickRhythm[i].Rec, KickChecker.Rec);
 
             if(isPerfectKick && IsKeyPressed(KEY_F)) {
-                KickRhythm[i].color = ColorAlpha(PURPLE, 0.9);
+                KickRhythm[i].color = ColorAlpha(PURPLE, 1);
+                KickRhythm[i].isPerfect = true;
+            }
+
+            if (KickRhythm[i].active && KickRhythm[i].Rec.x > -40) {
+
+                KickRhythm[i].Rec.x -= SPEED * deltaTime;
+
+                if (KickRhythm[i].isPerfect) {
+                    KickRhythm[i].Rec.width += PERFECT_SPEED * deltaTime;
+                }
+
+                DrawRectangleRounded(KickRhythm[i].Rec, 50, 10, KickRhythm[i].color);
+
             }
 
         }
@@ -168,28 +171,27 @@ int main() {
 
         for(int i = 0; i < SNARE_NUM; i++) {
 
-            if (!SnareRhythm[i].active && track_marker >= SnareRhythm[i].BeatAt) {
+            if (!SnareRhythm[i].active && fabs(track_marker - SnareRhythm[i].BeatAt) < 0.05f) {
                 SnareRhythm[i].active = true;
-            }
-
-            if (SnareRhythm[i].active && SnareRhythm[i].Rec.x > -20) {
-
-                SnareRhythm[i].Rec.x -= SPEED * deltaTime;
-
-                DrawRectangle(
-                        SnareRhythm[i].Rec.x,
-                        SnareRhythm[i].Rec.y,
-                        SnareRhythm[i].Rec.width,
-                        SnareRhythm[i].Rec.height,
-                        SnareRhythm[i].color
-                        );
-
             }
 
             isPerfectSnare = CheckCollisionRecs(SnareRhythm[i].Rec, SnareChecker.Rec);
 
             if(isPerfectSnare && IsKeyPressed(KEY_J)) {
                 SnareRhythm[i].color = (Color){197, 33, 132, 255};
+                SnareRhythm[i].isPerfect = true;
+            }
+
+            if (SnareRhythm[i].active && SnareRhythm[i].Rec.x > -40) {
+
+                SnareRhythm[i].Rec.x -= SPEED * deltaTime;
+
+                if (SnareRhythm[i].isPerfect) {
+                    SnareRhythm[i].Rec.width += PERFECT_SPEED * deltaTime;
+                }
+
+                DrawRectangleRounded(SnareRhythm[i].Rec, 50, 10, SnareRhythm[i].color);
+
             }
 
         }
@@ -198,29 +200,29 @@ int main() {
 
         for(int i = 0; i < LONG_NUM; i++) {
 
-            if (!LongRhythm[i].active && track_marker >= LongRhythm[i].BeatAt) {
+            if (!LongRhythm[i].active && fabs(track_marker - LongRhythm[i].BeatAt) < 0.05f) {
                 LongRhythm[i].active = true;
-            }
-
-            if (LongRhythm[i].active && LongRhythm[i].Rec.x > -20) {
-
-                LongRhythm[i].Rec.x -= SPEED * deltaTime;
-
-                DrawRectangle(
-                        LongRhythm[i].Rec.x,
-                        LongRhythm[i].Rec.y,
-                        LongRhythm[i].Rec.width,
-                        LongRhythm[i].Rec.height,
-                        LongRhythm[i].color
-                        );
-
             }
 
             isPerfectLong = CheckCollisionRecs(LongRhythm[i].Rec, LongChecker.Rec);
 
             if(isPerfectLong && IsKeyPressed(KEY_K)) {
                 LongRhythm[i].color = ColorAlpha(ORANGE, 1);
+                LongRhythm[i].isPerfect = true;
             }
+
+            if (LongRhythm[i].active && LongRhythm[i].Rec.x > -40) {
+
+                LongRhythm[i].Rec.x -= SPEED * deltaTime;
+
+                if (LongRhythm[i].isPerfect) {
+                    LongRhythm[i].Rec.width += PERFECT_SPEED * deltaTime;
+                }
+
+                DrawRectangleRounded(LongRhythm[i].Rec, 50, 10, LongRhythm[i].color);
+
+            }
+
 
         }
 
