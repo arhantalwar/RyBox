@@ -3,13 +3,18 @@
 #include <raylib.h>
 
 #define WIDTH 1024 * 1.5
-#define HEIGHT 900
-#define BEAT_OFFSET 2.3
-#define SPEED 500
-#define PERFECT_SPEED 40
+#define HEIGHT 900/2
+
 #define KICK_NUM 8
 #define SNARE_NUM 9
 #define LONG_NUM 23
+
+#define DIST WIDTH
+#define SPEED 500
+#define PERFECT_SPEED 30
+
+#define BEAT_OFFSET (2.41)
+#define OFFSCREEN_DIST -40
 
 typedef enum BeatType {
     KICK,
@@ -38,7 +43,7 @@ BeatBox* GenerateBeatTiming(BeatType type, int num, float timings[num]) {
 
     for(int i = 0; i < num; i++) {
 
-        beat_timings[i].Rec.x = WIDTH;
+        beat_timings[i].Rec.x = DIST;
         beat_timings[i].Rec.width = 20;
         beat_timings[i].Rec.height = (float) HEIGHT/3;
         beat_timings[i].BeatAt = (float) timings[i] - BEAT_OFFSET;
@@ -90,7 +95,7 @@ int main() {
         .Rec.y = 0,
         .Rec.width = 40,
         .Rec.height = (float) HEIGHT/3,
-        .color = ColorAlpha(PURPLE, 0.3)
+        .color = ColorAlpha(PURPLE, 0.3),
     };
 
     BeatCheckerBox SnareChecker = {
@@ -99,7 +104,7 @@ int main() {
         .Rec.y = (float) HEIGHT/3,
         .Rec.width = 40,
         .Rec.height = (float) HEIGHT/3,
-        .color = (Color){229, 116, 188, 255}
+        .color = (Color){229, 116, 188, 255},
     };
 
     BeatCheckerBox LongChecker = {
@@ -128,6 +133,10 @@ int main() {
     bool isPerfectSnare = false;
     bool isPerfectLong = false;
 
+    int KickRhythmCount = 0;
+    int SnareRhythmCount = 0;
+    int LongRhythmCount = 0;
+
     while(!WindowShouldClose()) {
 
         float deltaTime = GetFrameTime();
@@ -136,11 +145,15 @@ int main() {
         ClearBackground(RAYWHITE);
         UpdateMusicStream(track);
 
+        DrawRectangle(0, 0, WIDTH, HEIGHT/3, ColorAlpha(PURPLE, 0.2));
+        DrawRectangle(0, HEIGHT/3, WIDTH, HEIGHT/3, (Color){197, 33, 132, 255*0.2});
+        DrawRectangle(0, 2 * HEIGHT/3, WIDTH, HEIGHT/3, ColorAlpha(ORANGE, 0.2));
+
         BeginDrawing();
 
         DrawRectangle(KickChecker.Rec.x, KickChecker.Rec.y, KickChecker.Rec.width, KickChecker.Rec.height, KickChecker.color);
 
-        for(int i = 0; i < KICK_NUM; i++) {
+        for(int i = KickRhythmCount; i < KICK_NUM; i++) {
 
             if (!KickRhythm[i].active && fabs(track_marker - KickRhythm[i].BeatAt) < 0.05f) {
                 KickRhythm[i].active = true;
@@ -153,7 +166,7 @@ int main() {
                 KickRhythm[i].isPerfect = true;
             }
 
-            if (KickRhythm[i].active && KickRhythm[i].Rec.x > -40) {
+            if (KickRhythm[i].active && KickRhythm[i].Rec.x > OFFSCREEN_DIST) {
 
                 KickRhythm[i].Rec.x -= SPEED * deltaTime;
 
@@ -165,11 +178,15 @@ int main() {
 
             }
 
+            if (KickRhythm[i].Rec.x < OFFSCREEN_DIST) {
+                KickRhythmCount++;
+            }
+
         }
 
         DrawRectangle(SnareChecker.Rec.x, SnareChecker.Rec.y, SnareChecker.Rec.width, SnareChecker.Rec.height, SnareChecker.color);
 
-        for(int i = 0; i < SNARE_NUM; i++) {
+        for(int i = SnareRhythmCount; i < SNARE_NUM; i++) {
 
             if (!SnareRhythm[i].active && fabs(track_marker - SnareRhythm[i].BeatAt) < 0.05f) {
                 SnareRhythm[i].active = true;
@@ -182,7 +199,7 @@ int main() {
                 SnareRhythm[i].isPerfect = true;
             }
 
-            if (SnareRhythm[i].active && SnareRhythm[i].Rec.x > -40) {
+            if (SnareRhythm[i].active && SnareRhythm[i].Rec.x > OFFSCREEN_DIST) {
 
                 SnareRhythm[i].Rec.x -= SPEED * deltaTime;
 
@@ -194,11 +211,15 @@ int main() {
 
             }
 
+            if (SnareRhythm[i].Rec.x < OFFSCREEN_DIST) {
+                SnareRhythmCount++;
+            }
+
         }
 
         DrawRectangle(LongChecker.Rec.x, LongChecker.Rec.y, LongChecker.Rec.width, LongChecker.Rec.height, LongChecker.color);
 
-        for(int i = 0; i < LONG_NUM; i++) {
+        for(int i = LongRhythmCount; i < LONG_NUM; i++) {
 
             if (!LongRhythm[i].active && fabs(track_marker - LongRhythm[i].BeatAt) < 0.05f) {
                 LongRhythm[i].active = true;
@@ -211,7 +232,7 @@ int main() {
                 LongRhythm[i].isPerfect = true;
             }
 
-            if (LongRhythm[i].active && LongRhythm[i].Rec.x > -40) {
+            if (LongRhythm[i].active && LongRhythm[i].Rec.x > OFFSCREEN_DIST) {
 
                 LongRhythm[i].Rec.x -= SPEED * deltaTime;
 
@@ -219,7 +240,11 @@ int main() {
                     LongRhythm[i].Rec.width += PERFECT_SPEED * deltaTime;
                 }
 
-                DrawRectangleRounded(LongRhythm[i].Rec, 50, 10, LongRhythm[i].color);
+                DrawRectangleRounded(LongRhythm[i].Rec, 50, 0, LongRhythm[i].color);
+
+                if (LongRhythm[i].Rec.x < OFFSCREEN_DIST) {
+                    LongRhythmCount++;
+                }
 
             }
 
@@ -233,6 +258,7 @@ int main() {
     UnloadMusicStream(track);
     free(KickRhythm);
     free(SnareRhythm);
+    free(LongRhythm);
 
     return 0;
 
