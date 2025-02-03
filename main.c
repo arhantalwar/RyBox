@@ -13,7 +13,7 @@
 #define SPEED 500
 #define PERFECT_SPEED 30
 
-#define BEAT_OFFSET (2.41)
+#define BEAT_OFFSET 2.41
 #define OFFSCREEN_DIST -40
 
 typedef enum BeatType {
@@ -26,6 +26,7 @@ typedef struct BeatCheckerBox {
     BeatType Type;
     Rectangle Rec;
     Color color;
+    float timeout;
 } BeatCheckerBox;
 
 typedef struct BeatBox {
@@ -72,10 +73,10 @@ BeatBox* GenerateBeatTiming(BeatType type, int num, float timings[num]) {
                 beat_timings[i].Rec.y = (float) 2 * HEIGHT/3;
                 beat_timings[i].color = ColorAlpha(ORANGE, 0.5);
                 break;
-                
+
             default:
                 break;
-        
+
         }
     }
 
@@ -96,6 +97,7 @@ int main() {
         .Rec.width = 40,
         .Rec.height = (float) HEIGHT/3,
         .color = ColorAlpha(PURPLE, 0.3),
+        .timeout = 0.0f
     };
 
     BeatCheckerBox SnareChecker = {
@@ -104,7 +106,8 @@ int main() {
         .Rec.y = (float) HEIGHT/3,
         .Rec.width = 40,
         .Rec.height = (float) HEIGHT/3,
-        .color = (Color){229, 116, 188, 255},
+        .color = (Color){229, 116, 188, 255 * 0.3},
+        .timeout = 0.0f
     };
 
     BeatCheckerBox LongChecker = {
@@ -114,6 +117,7 @@ int main() {
         .Rec.width = 40,
         .Rec.height = (float) HEIGHT/3,
         .color = ColorAlpha(ORANGE, 0.3),
+        .timeout = 0.0f
     };
 
     float kick_timings[KICK_NUM] = {32.05, 33.67, 35.26, 36.97, 38.51, 40.13, 41.72, 43.31};
@@ -121,9 +125,9 @@ int main() {
 
     float snare_timings[SNARE_NUM] = {32.88, 34.50, 36.10, 37.69, 39.35, 40.96, 42.56, 44.10, 46.35};
     BeatBox* SnareRhythm = GenerateBeatTiming(SNARE, SNARE_NUM, snare_timings);
-    
+
     float long_timings[LONG_NUM] = {13.11, 13.92, 14.71, 15.51, 16.30, 17.11, 17.90, 18.71, 19.57, 20.38, 21.17, 21.96, 22.76,
-    23.57, 24.36, 25.15, 26.03, 26.84, 27.63, 28.42, 29.23, 30.03, 30.80};
+        23.57, 24.36, 25.15, 26.03, 26.84, 27.63, 28.42, 29.23, 30.03, 30.80};
     BeatBox* LongRhythm = GenerateBeatTiming(LONG_HOLD, LONG_NUM, long_timings);
 
     Music track = LoadMusicStream("./Shine.wav");
@@ -152,6 +156,12 @@ int main() {
         BeginDrawing();
 
         DrawRectangle(KickChecker.Rec.x, KickChecker.Rec.y, KickChecker.Rec.width, KickChecker.Rec.height, KickChecker.color);
+
+        if(IsKeyDown(KEY_F)) {
+            KickChecker.color = ColorAlpha(PURPLE, 0.6);
+        } else {
+            KickChecker.color = ColorAlpha(PURPLE, 0.3);
+        }
 
         for(int i = KickRhythmCount; i < KICK_NUM; i++) {
 
@@ -186,6 +196,12 @@ int main() {
 
         DrawRectangle(SnareChecker.Rec.x, SnareChecker.Rec.y, SnareChecker.Rec.width, SnareChecker.Rec.height, SnareChecker.color);
 
+        if(IsKeyDown(KEY_J)) {
+            SnareChecker.color = (Color){197, 33, 132, 255*0.6};
+        } else {
+            SnareChecker.color = (Color){197, 33, 132, 255*0.3};
+        }
+
         for(int i = SnareRhythmCount; i < SNARE_NUM; i++) {
 
             if (!SnareRhythm[i].active && fabs(track_marker - SnareRhythm[i].BeatAt) < 0.05f) {
@@ -219,6 +235,12 @@ int main() {
 
         DrawRectangle(LongChecker.Rec.x, LongChecker.Rec.y, LongChecker.Rec.width, LongChecker.Rec.height, LongChecker.color);
 
+        if(IsKeyDown(KEY_K)) {
+            LongChecker.color = ColorAlpha(ORANGE, 0.6);
+        } else {
+            LongChecker.color = ColorAlpha(ORANGE, 0.3);
+        }
+
         for(int i = LongRhythmCount; i < LONG_NUM; i++) {
 
             if (!LongRhythm[i].active && fabs(track_marker - LongRhythm[i].BeatAt) < 0.05f) {
@@ -247,7 +269,6 @@ int main() {
                 }
 
             }
-
 
         }
 
